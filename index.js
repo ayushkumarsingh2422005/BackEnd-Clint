@@ -1,9 +1,7 @@
 import express from "express";
 import items from './Routes/items.js'
-import connectToMongoose from "./db.js"; // Ensure the correct file extension
-
-
-connectToMongoose();
+// import db from "./db.js"; // Ensure the correct file extension
+// connectToMongoose();
 const app = express();
 
 
