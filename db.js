@@ -1,25 +1,16 @@
-// db.js
-// import mongoose from 'mongoose';
-
-// const connectToMongoose = async () => {
-//     const dbURI = 'mongodb+srv://admin:mgJMHdOwpXbLMrwg@orders.mywatlv.mongodb.net/?retryWrites=true&w=majority&appName=Orders';
-//     try 
-//     {
-//         await mongoose.connect(dbURI);
-//         console.log('Connected to MongoDB');
-//     } catch (err) {
-//         console.error('Failed to connect to MongoDB', err);
-//     }
-// };
-
-// export default connectToMongoose;
-
-import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
+// Open the database connection with a busy timeout
 const dbPromise = open({
     filename: 'database.db',
-    driver: sqlite3.Database
+    driver: sqlite3.Database,
+    mode: sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+    verbose: true
+});
+
+dbPromise.then(db => {
+    db.configure('busyTimeout', 5000);  // Wait up to 5000 ms (5 seconds) if the database is busy
 });
 
 export default dbPromise;

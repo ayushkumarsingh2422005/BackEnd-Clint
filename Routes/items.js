@@ -10,7 +10,7 @@ const router = Router();
 const createTable = async () => {
     const db = await dbPromise;
     await db.run(`
-        CREATE TABLE IF NOT EXISTS \`Order\` (
+        CREATE TABLE IF NOT EXISTS Order_detail (
             orderId TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             phone_number INTEGER NOT NULL,
@@ -32,7 +32,7 @@ router.post('/add', async (req, res) => {
     try {
         const db = await dbPromise;
         await db.run(`
-            INSERT INTO \`Order\` (orderId, name, phone_number, restaurant, table_number, items_desc, date)
+            INSERT INTO Order_detail (orderId, name, phone_number, restaurant, table_number, items_desc, date)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `, [orderId, name, phone_number, restaurant, table_number, JSON.stringify(items_desc), date]);
 
@@ -48,7 +48,7 @@ router.delete('/del/:id', async (req, res) => {
 
     try {
         const db = await dbPromise;
-        const result = await db.run(`DELETE FROM \`Order\` WHERE orderId = ?`, orderId);
+        const result = await db.run(`DELETE FROM Order_detail WHERE orderId = ?`, orderId);
 
         if (result.changes === 0) {
             return res.status(404).json({ error: 'Order not found' });
@@ -68,7 +68,7 @@ router.put('/update/:id', async (req, res) => {
     try {
         const db = await dbPromise;
         const result = await db.run(`
-            UPDATE \`Order\`
+            UPDATE Order_detail
             SET name = ?, phone_number = ?, restaurant = ?, table_number = ?, items_desc = ?
             WHERE orderId = ?
         `, [name, phone_number, restaurant, table_number, JSON.stringify(items_desc), orderId]);
@@ -87,7 +87,7 @@ router.put('/update/:id', async (req, res) => {
 router.get('/getall', async (req, res) => {
     try {
         const db = await dbPromise;
-        const allOrders = await db.all(`SELECT * FROM \`Order\``);
+        const allOrders = await db.all(`SELECT * FROM Order_detail`);
 
         const ordersWithParsedItemsDesc = allOrders.map(order => ({
             ...order,
@@ -99,5 +99,4 @@ router.get('/getall', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
 export default router;

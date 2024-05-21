@@ -1,23 +1,28 @@
 import express from "express";
-import items from './Routes/items.js'
-// import db from "./db.js"; // Ensure the correct file extension
-// connectToMongoose();
+import itemsRouter from './Routes/items.js';
+import dishesRouter from './Routes/dishes.js';
+import dbPromise from "./db.js";
+
 const app = express();
 
-
-// middlewares
+// Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Defining routes
-app.use('/api/order', items);
+// Routes
+// app.use('/api/order', itemsRouter);
+app.use('/api/dishes', dishesRouter);
 
 app.get('/', (req, res) => {
-    res.json({"ayush": "kumar singh"});
+    res.json({"message": "Server is running"});
 });
 
 // Starting server
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server running at port ${PORT}`);
+const PORT = process.env.PORT || 3000;
+dbPromise.then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running at port ${PORT}`);
+    });
+}).catch(err => {
+    console.error('DB Error:', err);
 });
