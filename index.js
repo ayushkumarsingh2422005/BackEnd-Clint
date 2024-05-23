@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-// app.use('/api/order', itemsRouter);
+app.use('/api/order', itemsRouter);
 app.use('/api/dishes', dishesRouter);
 
 app.get('/', (req, res) => {
