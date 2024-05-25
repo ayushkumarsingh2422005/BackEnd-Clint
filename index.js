@@ -32,7 +32,7 @@ app.use(cors()); // Enable CORS
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // Routes
-app.use('/api/order', itemsRouter);
+app.use('/api/orders', itemsRouter);
 app.use('/api/dishes', dishesRouter);
 app.use('/api/admin', adminAuthRouter);
 
