@@ -14,11 +14,11 @@ const createTable = async () => {
             orderId TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             phone_number INTEGER NOT NULL,
-            restaurant TEXT NOT NULL,
             table_number INTEGER NOT NULL,
             items_desc TEXT NOT NULL,
             total_bill REAL NOT NULL,
-            date DATETIME DEFAULT CURRENT_TIMESTAMP
+            date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            status TEXT NOT NULL CHECK (status IN ('pending', 'completed', 'paid'))
         )
     `);
 };
@@ -26,7 +26,7 @@ createTable();
 
 // Route to add data to the database
 router.post('/add', async (req, res) => {
-    const { name, phone_number, restaurant, table_number, items_desc } = req.body;
+    const { name, phone_number, table_number, items_desc, status} = req.body;
     // const orderId = shortid.generate();
     const orderId = await generateUniqueOrderId();
     const date = new Date().toISOString();
@@ -35,11 +35,11 @@ router.post('/add', async (req, res) => {
         const total_bill = await calculateTotalBill(items);
         const db = await dbPromise;
         await db.run(`
-            INSERT INTO Order_detail (orderId, name, phone_number, restaurant, table_number, items_desc,total_bill, date)
+            INSERT INTO Order_detail (orderId, name, phone_number, table_number, items_desc,total_bill, date, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [orderId, name, phone_number, restaurant, table_number, JSON.stringify(items_desc),total_bill, date]);
+        `, [orderId, name, phone_number, table_number, JSON.stringify(items_desc),total_bill, date, status]);
 
-        res.json({ orderId, name, phone_number, restaurant, table_number, items_desc,total_bill, date });
+        res.json({ orderId, name, phone_number, table_number, items_desc, total_bill, date, status });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -66,7 +66,7 @@ router.delete('/del/:id', async (req, res) => {
 // Route to update data
 router.put('/update/:id', async (req, res) => {
     const orderId = req.params.id;
-    const { name, phone_number, restaurant, table_number, items_desc } = req.body;
+    const { name, phone_number, table_number, items_desc, status } = req.body;
 
     try {
         const items = Array.isArray(items_desc) ? items_desc : JSON.parse(items_desc);
@@ -74,15 +74,15 @@ router.put('/update/:id', async (req, res) => {
         const db = await dbPromise;
         const result = await db.run(`
             UPDATE Order_detail
-            SET name = ?, phone_number = ?, restaurant = ?, table_number = ?, items_desc = ?, total_bill = ?
+            SET name = ?, phone_number = ?, table_number = ?, items_desc = ?, total_bill = ?, status = ?
             WHERE orderId = ?
-        `, [name, phone_number, restaurant, table_number, JSON.stringify(items_desc), total_bill, orderId]);
+        `, [name, phone_number, table_number, JSON.stringify(items_desc), total_bill, status, orderId]);
 
         if (result.changes === 0) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
-        res.json({ orderId, name, phone_number, restaurant, table_number, items_desc, total_bill });
+        res.json({ orderId, name, phone_number, table_number, items_desc, total_bill, status });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

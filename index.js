@@ -2,7 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import dbPromise from './db.js';
-import itemsRouter from './Routes/items.js';
+import orderRouter from './Routes/orders.js';
 import dishesRouter from './Routes/dishes.js';
 import adminAuthRouter from './Routes/adminAuth.js';
 
@@ -32,7 +32,7 @@ app.use(cors()); // Enable CORS
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // Routes
-app.use('/api/orders', itemsRouter);
+app.use('/api/orders', orderRouter);
 app.use('/api/dishes', dishesRouter);
 app.use('/api/admin', adminAuthRouter);
 
