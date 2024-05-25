@@ -13,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 // app.use('/api/order', itemsRouter);
 app.use('/api/dishes', dishesRouter);
+app.use('/api/orders', itemsRouter);
 
 app.get('/', (req, res) => {
     res.json({"message": "Server is running"});
