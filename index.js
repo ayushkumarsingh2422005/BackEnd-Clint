@@ -1,5 +1,5 @@
 import express from "express";
-import itemsRouter from './Routes/items.js';
+import ordersRouter from './Routes/items.js';
 import dishesRouter from './Routes/dishes.js';
 import dbPromise from "./db.js";
 import cors from "cors";
@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 // app.use('/api/order', itemsRouter);
 app.use('/api/dishes', dishesRouter);
-app.use('/api/orders', itemsRouter);
+app.use('/api/orders', ordersRouter);
 
 app.get('/', (req, res) => {
     res.json({"message": "Server is running"});
