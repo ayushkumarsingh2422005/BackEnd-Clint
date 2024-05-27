@@ -5,6 +5,7 @@ import dbPromise from './db.js';
 import orderRouter from './Routes/orders.js';
 import dishesRouter from './Routes/dishes.js';
 import adminAuthRouter from './Routes/adminAuth.js';
+import employeAuthDataRouter from './Routes/employeAuthData.js';
 
 // Create an Express app
 const app = express();
@@ -35,6 +36,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use('/api/orders', orderRouter);
 app.use('/api/dishes', dishesRouter);
 app.use('/api/admin', adminAuthRouter);
+app.use('/api/employe', employeAuthDataRouter);
 
 // Default route
 app.get('/', (req, res) => {

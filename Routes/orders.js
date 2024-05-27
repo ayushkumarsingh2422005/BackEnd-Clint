@@ -26,7 +26,7 @@ createTable();
 
 // Route to add data to the database
 router.post('/add', async (req, res) => {
-    const { name, phone_number, table_number, items_desc, status} = req.body;
+    const { name, phone_number, table_number, items_desc, status } = req.body;
     // const orderId = shortid.generate();
     const orderId = await generateUniqueOrderId();
     const date = new Date().toISOString();
@@ -37,7 +37,7 @@ router.post('/add', async (req, res) => {
         await db.run(`
             INSERT INTO Order_detail (orderId, name, phone_number, table_number, items_desc,total_bill, date, status)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [orderId, name, phone_number, table_number, JSON.stringify(items_desc),total_bill, date, status]);
+        `, [orderId, name, phone_number, table_number, JSON.stringify(items_desc), total_bill, date, status]);
 
         res.json({ orderId, name, phone_number, table_number, items_desc, total_bill, date, status });
     } catch (err) {
@@ -88,22 +88,101 @@ router.put('/update/:id', async (req, res) => {
     }
 });
 
-// Route to retrieve all orders
-router.get('/getall', async (req, res) => {
+// rout to update order status
+router.put('/update/status/:id', async (req, res) => {
+    const orderId = req.params.id;
+    const { status } = req.body;
+    const db = await dbPromise;
+
     try {
-        const db = await dbPromise;
-        const allOrders = await db.all(`SELECT * FROM Order_detail`);
+        const result = await db.run(`
+            UPDATE Order_detail
+            SET status = ?
+            WHERE orderId = ?
+        `, [status, orderId]);
 
-        const ordersWithParsedItemsDesc = allOrders.map(order => ({
-            ...order,
-            items_desc: JSON.parse(order.items_desc)
-        }));
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
 
-        res.json(ordersWithParsedItemsDesc);
+        res.json({ status });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
+// rout to update order status
+router.put('/update/menu/:id', async (req, res) => {
+    const orderId = req.params.id;
+    const { items_desc } = req.body;
+    const db = await dbPromise;
+
+    try {
+        const result = await db.run(`
+            UPDATE Order_detail
+            SET items_desc = ?
+            WHERE orderId = ?
+        `, [JSON.stringify(items_desc), orderId]);
+
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        res.json({ items_desc });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Route to retrieve all orders
+router.get('/getall/:type', async (req, res) => {
+    const type = req.params.type;
+    try {
+        const db = await dbPromise;
+        let allOrders;
+
+        if (type === 'all') {
+            allOrders = await db.all('SELECT * FROM Order_detail');
+        } else {
+            allOrders = await db.all('SELECT * FROM Order_detail WHERE status = ?', [type]);
+        }
+
+        const ordersWithParsedItemsDesc = allOrders.map(order => ({
+            ...order,
+            items_desc: JSON.parse(order.items_desc) // Assuming items_desc is stored as JSON
+        }));
+
+        res.json(ordersWithParsedItemsDesc);
+    } catch (err) {
+        console.error('Error fetching orders:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+router.get('/get/:id', async (req, res) => {
+    const id = req.params.id;
+    if (!id) {
+        return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    try {
+        const db = await dbPromise;
+        const order = await db.all('SELECT * FROM Order_detail WHERE orderId = ?', [id]);
+
+        if (order.length === 0) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        const ordersWithParsedItemsDesc = order.map(order => ({
+            ...order,
+            items_desc: JSON.parse(order.items_desc) // Assuming items_desc is stored as JSON
+        }));
+        res.json(ordersWithParsedItemsDesc[0]);
+    } catch (err) {
+        console.error('Error fetching orders:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 export default router;
 
 const generateUniqueOrderId = async () => {
@@ -130,7 +209,7 @@ const calculateTotalBill = async (items) => {
         const { item_id, item_quantity, item_plate } = item;
 
         const dish = await db.get('SELECT * FROM Dishes WHERE dishId = ?', [item_id]);
-        
+
         if (dish) {
             let itemPrice = 0;
             if (item_plate === 'full') {
