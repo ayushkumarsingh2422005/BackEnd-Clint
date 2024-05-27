@@ -171,16 +171,19 @@ router.get('/get/:id', async (req, res) => {
         if (order.length === 0) {
             return res.status(404).json({ error: 'Order not found' });
         }
-        const ordersWithParsedItemsDesc = order.map(order => ({
+
+        const ordersWithParsedItemsDesc = await Promise.all(order.map(async order => ({
             ...order,
-            items_desc: JSON.parse(order.items_desc) // Assuming items_desc is stored as JSON
-        }));
+            items_desc: await getItemMoney(JSON.parse(order.items_desc)) // Assuming items_desc is stored as JSON
+        })));
+
         res.json(ordersWithParsedItemsDesc[0]);
     } catch (err) {
         console.error('Error fetching orders:', err);
         res.status(500).json({ error: err.message });
     }
 });
+
 
 
 export default router;
@@ -223,4 +226,25 @@ const calculateTotalBill = async (items) => {
     }
 
     return totalBill;
+};
+
+const getItemMoney = async (items) => {
+    const db = await dbPromise;
+    let actualData = [];
+
+    for (const item of items) {
+        const { item_id, item_name, item_quantity, item_plate } = item;
+
+        let prize;
+        if (item_plate == "half") {
+            prize = await db.get('SELECT restaurant_half_price FROM Dishes WHERE dishId = ?', [item_id]);
+        } else {
+            prize = await db.get('SELECT restaurant_full_price FROM Dishes WHERE dishId = ?', [item_id]);
+        }
+        actualData.push({
+            item_id, item_name, item_quantity, item_plate, prize
+        })
+    }
+
+    return actualData;
 };
