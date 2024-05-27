@@ -91,6 +91,28 @@ router.get('/getall', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+router.post("/login",async(req,res)=>{
+    const {id,password} = req.body;
+    
+    try {
+    
+        const db = await dbPromise;
+        const employee = await db.get(`SELECT * FROM employeAuthData WHERE employeId = ?`,[id]);
+        
+        if (!employee) return res.status(404).json({message:"User not found"});
+
+        if (employee.password != password) return res.status(403).json({message:"Invalid credentials"});
+
+        return res.status(200).json({message:"successfully logged in"}); 
+    
+    } catch (error) {
+    
+        return res.status(500).json({error:err.message});
+    
+    }
+})
+
 export default router;
 
 
