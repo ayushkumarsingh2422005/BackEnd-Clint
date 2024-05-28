@@ -88,19 +88,19 @@ router.put('/attendence/:id', async (req, res) => {
         }
         const updatedAttendance = JSON.parse(employee.attendence);
         if(key in Object.keys(updatedAttendance)){
-            updatedAttendance.key.push(value)
+            updatedAttendance[key] = [...updatedAttendance[key], value]
         } else {
-            updatedAttendance.key = [value];
+            updatedAttendance[key] = [value];
         }
-        // res.json(key in Object.keys(parsed_data))
+        // res.json(updatedAttendance)
         // Assuming you want to update the attendance in some way
         // const updatedAttendance = /* your logic to update attendance */;
 
         const result = await db.run(`
             UPDATE employePersonalData 
-            SET attendance = ?
+            SET attendence = ?
             WHERE employeId = ?
-        `, [updatedAttendance, id]);
+        `, [JSON.stringify(updatedAttendance), id]);
 
         if (result.changes === 0) {
             return res.status(400).json({ error: 'Failed to update attendance' });
