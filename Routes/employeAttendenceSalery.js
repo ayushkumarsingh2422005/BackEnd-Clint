@@ -35,6 +35,25 @@ router.get('/getall', async (req, res) => {
     }
 });
 
+// Endpoint to get attendennce data
+router.get('/get-attendence/:id', async (req, res) => {
+    const {id} = req.params;
+    try {
+        const db = await dbPromise;
+        const result = await db.all(`
+            SELECT attendence FROM employePersonalData
+            WHERE employeId = ?
+        `, [id]);
+
+        // Parse JSON data for attendance and salary
+
+        res.json(JSON.parse(result[0].attendence));
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // Endpoint to update attendance and salary data
 router.put('/update/:id', async (req, res) => {
     const { id } = req.params;

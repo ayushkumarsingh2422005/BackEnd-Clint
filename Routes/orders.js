@@ -117,11 +117,13 @@ router.put('/update/menu/:id', async (req, res) => {
     const db = await dbPromise;
 
     try {
+        const items = Array.isArray(items_desc) ? items_desc : JSON.parse(items_desc);
+        const total_bill = await calculateTotalBill(items);
         const result = await db.run(`
             UPDATE Order_detail
-            SET items_desc = ?
+            SET items_desc = ?, total_bill = ?
             WHERE orderId = ?
-        `, [JSON.stringify(items_desc), orderId]);
+        `, [JSON.stringify(items_desc),total_bill, orderId]);
 
         if (result.changes === 0) {
             return res.status(404).json({ error: 'Order not found' });
