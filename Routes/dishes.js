@@ -98,4 +98,30 @@ router.get('/getall', async (req, res) => {
     }
 });
 
+router.get('/order-count', async(req, res) => {
+    const query = `
+        SELECT 
+            D.dishId,
+            D.name,
+            COUNT(O.orderId) AS times_ordered
+        FROM 
+            Dishes D
+        LEFT JOIN 
+            Order_detail O ON O.items_desc LIKE '%' || D.name || '%'
+            AND O.status IN ('completed', 'paid')
+        GROUP BY 
+            D.dishId
+        ORDER BY 
+            times_ordered DESC;
+    `;
+    try {
+        const db = await dbPromise;
+        const ordersCount = await db.all(query);
+        console.log(ordersCount);
+        res.status(200).json(ordersCount);
+    } catch (error) {
+        res.status(500).json({error:error.message});
+    }
+});
+
 export default router;
