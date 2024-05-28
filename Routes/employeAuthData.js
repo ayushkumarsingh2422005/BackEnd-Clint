@@ -8,14 +8,44 @@ const createTable = async () => {
     try {
         const db = await dbPromise;
         await db.run(`
-        CREATE TABLE IF NOT EXISTS employeAuthData (
-            employeId TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            phone_number INTEGER NOT NULL DEFAULT 0,
-            password TEXT NOT NULL DEFAULT '0',
-            mail TEXT UNIQUE NOT NULL DEFAULT '0'
-        );
+            CREATE TABLE IF NOT EXISTS employeAuthData (
+                employeId TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                phone_number INTEGER NOT NULL DEFAULT 0,
+                password TEXT NOT NULL DEFAULT '0',
+                mail TEXT UNIQUE NOT NULL DEFAULT '0'
+            );
         `);
+
+        // Create employePersonalData table
+        await db.run(`
+            CREATE TABLE IF NOT EXISTS employePersonalData (
+                employeId TEXT PRIMARY KEY,
+                attendence TEXT NOT NULL DEFAULT '{}',
+                salery TEXT NOT NULL DEFAULT '{}'
+            );
+        `);
+
+        // Create trigger to insert into employePersonalData when a new record is added to employeAuthData
+        await db.run(`
+            CREATE TRIGGER IF NOT EXISTS after_insert_employeAuthData
+            AFTER INSERT ON employeAuthData
+            FOR EACH ROW
+            BEGIN
+                INSERT INTO employePersonalData (employeId) VALUES (NEW.employeId);
+            END;
+        `);
+
+        // Create trigger to delete from employePersonalData when a record is deleted from employeAuthData
+        await db.run(`
+            CREATE TRIGGER IF NOT EXISTS after_delete_employeAuthData
+            AFTER DELETE ON employeAuthData
+            FOR EACH ROW
+            BEGIN
+                DELETE FROM employePersonalData WHERE employeId = OLD.employeId;
+            END;
+        `);
+
     } catch (err) {
         console.error("Error creating table:", err.message);
     }
@@ -27,7 +57,7 @@ router.delete('/del/:employeId', async (req, res) => {
     try {
         const db = await dbPromise;
         const result = await db.run('DELETE FROM employeAuthData WHERE employeId = ?', [employeId]);
-        
+
         if (result.changes === 1) {
             res.json({ message: `Employee with employeId ${employeId} deleted successfully.` });
         } else {
@@ -52,7 +82,7 @@ router.put('/update/:id', async (req, res) => {
         `, [name, phone_number, password, mail, employeId]);
 
         if (result.changes === 1) {
-            res.json({ message: {employeId, name, phone_number, password, mail} });
+            res.json({ message: { employeId, name, phone_number, password, mail } });
         } else {
             res.status(404).json({ error: `Employee with employeId ${employeId} not found.` });
         }
@@ -92,24 +122,24 @@ router.get('/getall', async (req, res) => {
     }
 });
 
-router.post("/login",async(req,res)=>{
-    const {id,password} = req.body;
-    
+router.post("/login", async (req, res) => {
+    const { id, password } = req.body;
+
     try {
-    
+
         const db = await dbPromise;
-        const employee = await db.get(`SELECT * FROM employeAuthData WHERE employeId = ?`,[id]);
-        
-        if (!employee) return res.status(404).json({message:"User not found"});
+        const employee = await db.get(`SELECT * FROM employeAuthData WHERE employeId = ?`, [id]);
 
-        if (employee.password != password) return res.status(403).json({message:"Invalid credentials"});
+        if (!employee) return res.status(404).json({ message: "User not found" });
 
-        return res.status(200).json({message:"successfully logged in"}); 
-    
+        if (employee.password != password) return res.status(403).json({ message: "Invalid credentials" });
+
+        return res.status(200).json({ message: "successfully logged in" });
+
     } catch (error) {
-    
-        return res.status(500).json({error:err.message});
-    
+
+        return res.status(500).json({ error: err.message });
+
     }
 })
 

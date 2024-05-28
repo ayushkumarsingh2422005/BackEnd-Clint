@@ -6,6 +6,7 @@ import orderRouter from './Routes/orders.js';
 import dishesRouter from './Routes/dishes.js';
 import adminAuthRouter from './Routes/adminAuth.js';
 import employeAuthDataRouter from './Routes/employeAuthData.js';
+import employeDataRouter from './Routes/employeAttendenceSalery.js';
 
 // Create an Express app
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/orders', orderRouter);
 app.use('/api/dishes', dishesRouter);
 app.use('/api/admin', adminAuthRouter);
 app.use('/api/employe', employeAuthDataRouter);
+app.use('/api/employe-data', employeDataRouter);
 
 // Default route
 app.get('/', (req, res) => {
