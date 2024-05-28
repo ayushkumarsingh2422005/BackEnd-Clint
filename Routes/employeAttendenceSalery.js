@@ -69,8 +69,7 @@ router.put('/attendence/:id', async (req, res) => {
     const { id } = req.params;
     const date = new Date();
     const key = (date.getMonth() + 1) + "-" + date.getFullYear();
-    const value = date.getDay();
-    console.log(id);
+    const value = date.getDate();
 
     if (!id) {
         return res.status(400).json({ error: 'ID is required' });
@@ -87,8 +86,10 @@ router.put('/attendence/:id', async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
         const updatedAttendance = JSON.parse(employee.attendence);
-        if(key in Object.keys(updatedAttendance)){
-            updatedAttendance[key] = [...updatedAttendance[key], value]
+        if(updatedAttendance.hasOwnProperty(key)){
+            if (!updatedAttendance[key].includes(value)) {
+                updatedAttendance[key].push(value)
+            }
         } else {
             updatedAttendance[key] = [value];
         }
