@@ -1,6 +1,5 @@
 // routes/userRoutes.js
 import { Router } from 'express';
-import shortid from 'shortid';
 import dbPromise from '../db.js';
 // Open the database connection
 
