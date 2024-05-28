@@ -1,6 +1,5 @@
 // routes/userRoutes.js
 import { Router } from 'express';
-import shortid from 'shortid';
 import dbPromise from '../db.js';
 // Open the database connection
 
@@ -235,12 +234,8 @@ const getItemMoney = async (items) => {
     for (const item of items) {
         const { item_id, item_name, item_quantity, item_plate } = item;
 
-        let prize;
-        if (item_plate == "half") {
-            prize = await db.get('SELECT restaurant_half_price FROM Dishes WHERE dishId = ?', [item_id]);
-        } else {
-            prize = await db.get('SELECT restaurant_full_price FROM Dishes WHERE dishId = ?', [item_id]);
-        }
+        let prize = await db.get('SELECT restaurant_full_price,restaurant_half_price FROM Dishes WHERE dishId = ?', [item_id]);
+        
         actualData.push({
             item_id, item_name, item_quantity, item_plate, prize
         })
