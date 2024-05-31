@@ -4,6 +4,16 @@ import dbPromise from '../db.js';
 // Open the database connection
 
 const router = Router();
+const validateDateFormat = (req, res, next) => {
+    const date = req.params.date;
+    const dateRegex = /^\d{4}-\d{1,2}-\d{1,2}$/;
+
+    if (!dateRegex.test(date)) {
+        return res.status(400).json({ error: 'Invalid date format. Use YYYY-M-D.' });
+    }
+
+    next();
+};
 
 // Create the Order table if it doesn't exist
 const createTable = async () => {
@@ -185,7 +195,85 @@ router.get('/get/:id', async (req, res) => {
     }
 });
 
+// Route to get all sold items on a particular date
+router.get('/sold-item-counts/:date', validateDateFormat, async (req, res) => {
+    const date = req.params.date;
+    try {
+        // Convert the date to a consistent format with leading zeros for SQLite
+        const formattedDate = new Date(date).toISOString().split('T')[0]; // Converts to 'YYYY-MM-DD'
+        const db = await dbPromise;
+        const orders = await db.all(`
+            SELECT * FROM Order_detail WHERE date(date) = date(?) AND status = 'completed'
+        `, [formattedDate]);
 
+        const itemCounts = {};
+
+        orders.forEach(order => {
+            const items = JSON.parse(order.items_desc);
+            items.forEach(item => {
+                const itemKey = `${item.item_id}-${item.item_name}-${item.item_plate}`;
+                if (!itemCounts[itemKey]) {
+                    itemCounts[itemKey] = {
+                        item_id: item.item_id,
+                        item_name: item.item_name,
+                        item_plate: item.item_plate,
+                        count: 0
+                    };
+                }
+                itemCounts[itemKey].count += item.item_quantity;
+            });
+        });
+
+        res.json(Object.values(itemCounts));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Route to get total money earned on a particular date
+router.get('/total-money/:date', async (req, res) => {
+    const date = req.params.date;
+    try {
+        const db = await dbPromise;
+        const result = await db.get(`
+            SELECT SUM(total_bill) as total FROM Order_detail WHERE date(date) = date(?) AND status = 'completed'
+        `, [date]);
+
+        res.json({ date, total_money_earned: result.total });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+router.get('/total-money/', async (req, res) => {
+    try {
+        const db = await dbPromise;
+        const result = await db.get(`
+            SELECT SUM(total_bill) as total FROM Order_detail WHERE status = 'completed'
+        `);
+
+        res.json({ total_money_earned: result.total });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Route to get order statistics (e.g., total orders, completed orders, pending orders)
+router.get('/order-stats', async (req, res) => {
+    try {
+        const db = await dbPromise;
+        const totalOrders = await db.get('SELECT COUNT(*) as count FROM Order_detail');
+        const completedOrders = await db.get('SELECT COUNT(*) as count FROM Order_detail WHERE status = "completed"');
+        const pendingOrders = await db.get('SELECT COUNT(*) as count FROM Order_detail WHERE status = "pending"');
+
+        res.json({
+            total_orders: totalOrders.count,
+            completed_orders: completedOrders.count,
+            pending_orders: pendingOrders.count,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 export default router;
 
@@ -248,3 +336,4 @@ const getItemMoney = async (items) => {
 
     return actualData;
 };
+

@@ -37,7 +37,7 @@ router.get('/getall', async (req, res) => {
 
 // Endpoint to get attendennce data
 router.get('/get-attendence/:id', async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     try {
         const db = await dbPromise;
         const result = await db.all(`
@@ -53,6 +53,7 @@ router.get('/get-attendence/:id', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 // Endpoint to update attendance and salary data
 router.put('/update/:id', async (req, res) => {
@@ -105,7 +106,7 @@ router.put('/attendence/:id', async (req, res) => {
             return res.status(404).json({ error: 'Employee not found' });
         }
         const updatedAttendance = JSON.parse(employee.attendence);
-        if(updatedAttendance.hasOwnProperty(key)){
+        if (updatedAttendance.hasOwnProperty(key)) {
             if (!updatedAttendance[key].includes(value)) {
                 updatedAttendance[key].push(value)
             }
