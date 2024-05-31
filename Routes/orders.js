@@ -145,7 +145,7 @@ router.get('/getall/:type', async (req, res) => {
         if (type === 'all') {
             allOrders = await db.all('SELECT * FROM Order_detail');
         } else {
-            allOrders = await db.all('SELECT * FROM Order_detail WHERE status = ?', [type]);
+            allOrders = await db.all('SELECT * FROM Order_detail WHERE status = ? ORDER BY date DESC', [type]);
         }
 
         const ordersWithParsedItemsDesc = allOrders.map(order => ({
@@ -237,7 +237,10 @@ const getItemMoney = async (items) => {
         const { item_id, item_name, item_quantity, item_plate } = item;
 
         let prize = await db.get('SELECT restaurant_full_price,restaurant_half_price FROM Dishes WHERE dishId = ?', [item_id]);
-        
+        prize = prize || {
+            restaurant_half_price: 0,
+            restaurant_full_price: 0
+        }
         actualData.push({
             item_id, item_name, item_quantity, item_plate, prize
         })

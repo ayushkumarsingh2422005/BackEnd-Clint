@@ -7,6 +7,9 @@ import dishesRouter from './Routes/dishes.js';
 import adminAuthRouter from './Routes/adminAuth.js';
 import employeAuthDataRouter from './Routes/employeAuthData.js';
 import employeDataRouter from './Routes/employeAttendenceSalery.js';
+import remarkRouter from './Routes/remarks.js';
+import salesRouter from './Routes/sales.js';
+
 
 // Create an Express app
 const app = express();
@@ -39,6 +42,8 @@ app.use('/api/dishes', dishesRouter);
 app.use('/api/admin', adminAuthRouter);
 app.use('/api/employe', employeAuthDataRouter);
 app.use('/api/employe-data', employeDataRouter);
+app.use('/api/remark', remarkRouter);
+app.use('/api/sales', salesRouter);
 
 // Default route
 app.get('/', (req, res) => {
