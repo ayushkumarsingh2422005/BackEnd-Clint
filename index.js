@@ -9,6 +9,7 @@ import employeAuthDataRouter from './Routes/employeAuthData.js';
 import employeDataRouter from './Routes/employeAttendenceSalery.js';
 import remarkRouter from './Routes/remarks.js';
 import salesRouter from './Routes/sales.js';
+import purchaseRouter from './Routes/purchase.js'
 
 
 // Create an Express app
@@ -44,6 +45,7 @@ app.use('/api/employe', employeAuthDataRouter);
 app.use('/api/employe-data', employeDataRouter);
 app.use('/api/remark', remarkRouter);
 app.use('/api/sales', salesRouter);
+app.use('/api/purchase', purchaseRouter);
 
 // Default route
 app.get('/', (req, res) => {
