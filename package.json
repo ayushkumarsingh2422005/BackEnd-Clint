@@ -4,8 +4,11 @@
   "description": "Backend for clint",
   "main": "index.js",
   "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "node index.js"
   },
   "author": "Ayush Kumar",
   "license": "ISC",
