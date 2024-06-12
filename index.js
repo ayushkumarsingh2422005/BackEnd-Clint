@@ -53,7 +53,7 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-const PORT = 8080;
+const PORT = process.env.PORT || 3000;
 
 // Connect to the database and start the server
 dbPromise.then(() => {
